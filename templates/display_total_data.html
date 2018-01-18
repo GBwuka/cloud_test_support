@@ -1,0 +1,335 @@
+{% extends "navbar/navbar_base.html" %}
+
+{% block title %}总体数据展示{% endblock %}
+
+{% block func_list %}
+<li><a href="../display_score/?flag=score&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}">得分数据
+</a></li>
+<li><a href="../display_superuser_data/?flag=super&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}">详细数据</a></li>
+<li><a href="#" data-toggle="modal" data-target="#searchDateModal">筛选日期</a></li>
+{% endblock %}
+
+{% block echarts_content %}
+<div class="container" style="width:1800px;height:20px">
+  <button type="button" class="btn btn-default" style="position:absolute;right:230px;" onclick="export_excel()">
+    导出
+  </button>
+  <button type="button" class="btn btn-default" title="说明" style="position:absolute;right:150px;"
+    data-container="body" data-toggle="popover" data-placement="bottom" 
+    data-content="所有用户每日标注总量/耗时(h)">
+    <span class="glyphicon glyphicon-question-sign"></span>说明
+  </button>
+</div>
+<script type="text/javascript">
+  function export_excel() {
+    window.location.href = "../export_excel/?flag=total&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}"
+  }
+</script>
+
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="total_data_line" style="width:1800px;height:400px;"></div>
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var myChart_total = echarts.init(document.getElementById('total_data_line'));
+  var dateList = {{ date_list|safe }};
+  var userList = {{ user_list|safe }};
+  var totalDataList = {{ total_data_list|safe }};
+  var spendTimeList = {{ spend_time_list|safe }};
+  var spendTimeDict = {{ spend_time_dict|safe }};
+  var avgTotalData = {{ avg_total_data|safe }}
+  
+  var seriesList = []
+
+  var series_total = {
+    'name': userList,
+    'type': 'line',
+    'smooth': true,
+    'data': totalDataList,
+    'markLine': {
+      'data': [
+      // {
+      //   'name': '实际线',
+      //   'type': 'average',
+      //   'lineStyle': {
+      //     'normal': {
+      //       'color': 'rgb(0, 0, 255)'
+      //     }
+      //   },
+      // },
+      {
+        'name': '基准线',
+        'yAxis': avgTotalData,
+        'lineStyle': {
+          'normal': {
+            'color': 'rgb(0, 0, 255)'
+          }
+        },
+      },
+      ]}
+  }
+  seriesList.push(series_total)
+  var datazoom = []
+  if (dateList.length > 15) {
+    var datazoom = [
+        {
+            type: 'inside',
+            start: 30,
+            end: 60
+        }, 
+        {
+            start: 0,
+            end: 10,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: 
+            {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }
+    ]
+  }
+  // 指定图表的配置项和数据
+  var option = {
+    title: {
+        text: '标注总量/耗时(h)',
+        x: 'center'
+    },
+    animation: false, // 关闭动画效果
+    tooltip: {
+        trigger: 'axis',
+        formatter: function (params) {
+          var res = params[0].name + "<br/>"
+          for(var i=0; i<params.length; i++){
+            res += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:9px;height:9px;background-color:' + params[i].color + '"></span>';
+            res += params[i].seriesName + ': 总量:' + params[i].data + ", 耗时(h):" + spendTimeDict[params[0].name]
+            + "<br/>"
+          }
+          return res;
+        },
+        axisPointer: {
+            type: 'cross'
+        }
+    },
+    toolbox: {
+        show: true,
+        feature: {
+            saveAsImage: {show: true}
+        }
+    },
+    legend: {
+        data: userList,
+        x: 'left'
+    },
+    axisPointer: {
+        link: {xAxisIndex: 'all'}
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    xAxis : [
+        {
+            type: 'category',
+            name: '日期',
+            splitLine: {show: false},
+            data: dateList
+        },
+    ],
+    yAxis : [
+        {
+            name : '总量',
+            type : 'value',
+            // max : 500
+        },
+    ],
+    dataZoom : datazoom,
+    series : seriesList
+  };
+
+  // 使用刚指定的配置项和数据显示图表。
+  myChart_total.setOption(option);
+  /**
+  * ajax传输图片信息.
+  */
+  var dataUrl_total = myChart_total.getDataURL()
+  function postImage_total() {  
+    // 向后台发起请求保存图片到指定目录.
+    $.ajax({
+        type: 'post',
+        // url: '/saveImage',
+        data: {
+          modal_name: 'echartsTotalData',
+          picInfo: dataUrl_total,
+        },
+        dataType: 'json',
+        // data: {picInfo: myChart.getDataURL()},
+        success: function() {
+            console.log('通过post请求传输数据成功!');
+        }
+    });
+  }
+</script>
+<hr style="height:1px;border:none;border-top:3px solid #555555;" />
+<div class="container" style="width:1800px;height:20px">
+  <button type="button" class="btn btn-default" title="说明" style="position:absolute;right:150px;"
+    data-container="body" data-toggle="popover" data-placement="bottom" 
+    data-content="所有用户每日标注效率">
+    <span class="glyphicon glyphicon-question-sign"></span>说明
+  </button>
+</div>
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="efficiency_line" style="width:1800px;height:400px;"></div>
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var myChart_efficiency = echarts.init(document.getElementById('efficiency_line'));
+  var dateList = {{ date_list|safe }};
+  var userList = {{ user_list|safe }};
+  var efficiencyDataList = {{ efficiency_data_list|safe }};
+  var avgEfficiencyData = {{ avg_efficiency_data|safe }}
+  
+  var seriesList = []
+
+  var series = {
+    'name': userList,
+    'type': 'line',
+    'smooth': true,
+    'data': efficiencyDataList,
+    'markLine': {
+      'data': [
+      // {
+      //   'name': '实际线',
+      //   'type': 'average',
+      //   'lineStyle': {
+      //     'normal': {
+      //       'color': 'rgb(0, 0, 255)'
+      //     }
+      //   },
+      // },
+      {
+        'name': '基准线',
+        'yAxis': avgEfficiencyData,
+        'lineStyle': {
+          'normal': {
+            'color': 'rgb(0, 0, 255)'
+          }
+        },
+      },
+      ]}
+  }
+  seriesList.push(series)
+  // 指定图表的配置项和数据
+  var datazoom = []
+  if (dateList.length > 15) {
+    var datazoom = [
+        {
+            type: 'inside',
+            start: 30,
+            end: 60
+        }, 
+        {
+            start: 0,
+            end: 10,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: 
+            {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }
+    ]
+  }
+  var option = {
+    title: {
+        text: '标注效率',
+        left: 'center'
+    },
+    animation: false, // 关闭动画效果
+    tooltip: {
+        trigger: 'axis',
+        // formatter: '{a} <br/>{b} : {c}'
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    toolbox: {
+        show: true,
+        feature: {
+            saveAsImage: {show: true}
+        }
+    },
+    legend: {
+        left: 'left',
+        data: userList
+    },
+    xAxis: {
+        type: 'category',
+        name: '日期',
+        splitLine: {show: false},
+        data: dateList
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis: {
+        type: 'value',
+        name: '效率'
+    },
+    dataZoom : datazoom,
+    series: seriesList
+  };
+
+  // 使用刚指定的配置项和数据显示图表。
+  myChart_efficiency.setOption(option);
+  /**
+  * ajax传输图片信息.
+  */
+  var dataUrl_efficiency = myChart_efficiency.getDataURL()
+  function postImage_total_efficiency() {  
+    // 向后台发起请求保存图片到指定目录.
+    $.ajax({
+        type: 'post',
+        // url: '/saveImage',
+        data: {
+          modal_name: 'echartsTotalEfficiencyData',
+          picInfo: dataUrl_efficiency,
+        },
+        dataType: 'json',
+        // data: {picInfo: myChart.getDataURL()},
+        success: function() {
+            console.log('通过post请求传输数据成功!');
+        }
+    });
+  }
+</script>
+<!-- <hr style="height:1px;border:none;border-top:3px solid #555555;" />
+<h3 align="center">标注数据</h3>
+<table class="table table-striped" align="center">
+  <tr>
+    <td>日期</td>
+    <td>总条数</td>
+    <td>耗时(h)</td>
+    <td>效率</td>
+  </tr>
+  {% for d in data %}
+    <tr>
+      <td>{{ d.created_date }}</td>
+      <td>{{ d.total_data }}</td>
+      <td>{{ d.spend_time }}</td>
+      <td>{{ d.efficiency }}</td>
+    </tr>
+  {% endfor %}
+</table> -->
+{% endblock %}

@@ -1,0 +1,236 @@
+{% extends "navbar/navbar_base.html" %}
+
+{% block title %}数据展示{% endblock %}
+
+{% block func_list %}
+<li><a href="#" data-toggle="modal" data-target="#searchDateModal">筛选日期</a></li>
+{% endblock %}
+
+{% block echarts_content %}
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="total_data_line" style="width:1800px;height:400px;"></div>
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var myChart = echarts.init(document.getElementById('total_data_line'));
+  var dateList = {{ date_list|safe }};
+  var userList = {{ user_list|safe }};
+  var totalDataList = {{ total_data_list|safe }};
+  
+  var seriesList = []
+
+  var series = {
+    'name': userList,
+    'type': 'line',
+    'smooth': true,
+    'data': totalDataList
+  }
+  seriesList.push(series)
+
+  var datazoom = []
+  if (dateList.length > 15) {
+    var datazoom = [
+        {
+            type: 'inside',
+            start: 30,
+            end: 60
+        }, 
+        {
+            start: 0,
+            end: 10,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: 
+            {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }
+    ]
+  }
+  // 指定图表的配置项和数据
+  var option = {
+    title: {
+        text: '标注总量',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        // formatter: '{a} <br/>{b} : {c}'
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    legend: {
+        left: 'left',
+        data: userList
+    },
+    xAxis: {
+        type: 'category',
+        name: '日期',
+        splitLine: {show: false},
+        data: dateList
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis: {
+        type: 'value',
+        name: '总数'
+    },
+    dataZoom : datazoom,
+    series: seriesList
+  };
+
+  // 使用刚指定的配置项和数据显示图表。
+  myChart.setOption(option);
+</script>
+<hr style="height:1px;border:none;border-top:3px solid #555555;" />
+<!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+<div id="efficiency_line" style="width:1800px;height:400px;"></div>
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts实例
+  var myChart = echarts.init(document.getElementById('efficiency_line'));
+  var dateList = {{ date_list|safe }};
+  var userList = {{ user_list|safe }};
+  var efficiencyDataList = {{ efficiency_data_list|safe }};
+  
+  var seriesList = []
+
+  var series = {
+    'name': userList,
+    'type': 'line',
+    'smooth': true,
+    'data': efficiencyDataList
+  }
+  seriesList.push(series)
+  var datazoom = []
+  if (dateList.length > 15) {
+    var datazoom = [
+        {
+            type: 'inside',
+            start: 30,
+            end: 60
+        }, 
+        {
+            start: 0,
+            end: 10,
+            handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+            handleSize: '80%',
+            handleStyle: 
+            {
+                color: '#fff',
+                shadowBlur: 3,
+                shadowColor: 'rgba(0, 0, 0, 0.6)',
+                shadowOffsetX: 2,
+                shadowOffsetY: 2
+            }
+        }
+    ]
+  }
+  // 指定图表的配置项和数据
+  var option = {
+    title: {
+        text: '标注效率',
+        left: 'center'
+    },
+    tooltip: {
+        trigger: 'axis',
+        // formatter: '{a} <br/>{b} : {c}'
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    legend: {
+        left: 'left',
+        data: userList
+    },
+    xAxis: {
+        type: 'category',
+        name: '日期',
+        splitLine: {show: false},
+        data: dateList
+    },
+    grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+    },
+    yAxis: {
+        type: 'value',
+        name: '效率'
+    },
+    dataZoom : datazoom,
+    series: seriesList
+  };
+
+  // 使用刚指定的配置项和数据显示图表。
+  myChart.setOption(option);
+</script>
+<hr style="height:1px;border:none;border-top:3px solid #555555;" />
+<h3 align="center">标注数据</h3>
+<div>
+  <a href="#" data-toggle="modal" data-target="#addDateModal">添加</a>
+</div>
+{% include "modal/add_data_modal.html" %}
+<table id="data_table" class="table table-striped" align="center">
+  <tr>
+    <td>日期</td>
+    <td>总条数</td>
+    <td>耗时(h)</td>
+    <td>效率</td>
+    <td>出勤</td>
+    <td>备注</td>
+    <td>操作</td>
+  </tr>
+  {% for d in data %}
+    <tr>
+      <td>{{ d.created_date }}</td>
+      <td>{{ d.total_data }}</td>
+      <td>{{ d.spend_time }}</td>
+      <td>{{ d.efficiency }}</td>
+      <td>{{ d.is_on_duty }}</td>
+      <td>{{ d.remark }}</td>
+      <td>
+        <a id="{{ d.id }}" href="#" data-toggle="modal" data-target="#editDateModal">编辑</a>
+        {% include "modal/edit_data_modal.html" %}
+        |
+        <a id="{{ d.id }}" href="#" data-toggle="modal" data-target="#delDateModal">删除</a>
+        {% include "modal/del_data_modal.html" %}
+      </td>
+    </tr>
+  {% endfor %}
+</table>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% if data.has_previous %}
+      <li>
+        <a href="/label_data/display_commonuser_data/?flag=common&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}&page=
+        {{ data.previous_page_number }}" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+    {% endif %}
+    {% for pg in data.paginator.page_range %}
+      {% if data.number == pg %}
+        <li class="active"><a href="/label_data/display_commonuser_data/?flag=common&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}&page={{ pg }}">{{ pg }}</a></li>
+      {% else %}
+        <li><a href="/label_data/display_commonuser_data/?flag=common&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}&page={{ pg }}">{{ pg }}</a></li>
+      {% endif %}
+    {% endfor %}
+    {% if data.has_next %}
+      <li>
+        <a href="/label_data/display_commonuser_data/?flag=common&date_begin={{ date_begin }}&date_end={{ date_end }}&time_delta={{ time_delta }}&page={{ data.next_page_number }}" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}

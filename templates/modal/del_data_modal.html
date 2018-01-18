@@ -1,0 +1,38 @@
+<div class="modal fade" id="delDateModal" tabindex="-1" role="dialog" aria-labelledby="delDateModalLabel" aria-hidden="true"
+    data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <h4 class="modal-title" id="delDateModalLabel">删除数据</h4>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="del_data_confirm()">确认</button>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+  var data_id = ""
+  $('#delDateModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget) //获取当前触发事件的按钮
+    data_id = button[0].id
+  })
+  function del_data_confirm() {
+    $.ajax({
+      type: "post",
+      // url: "update.do",
+      data: "modal_name=delDateModal&data_id=" + data_id,
+      dataType: 'json',
+      // contentType: "application/x-www-form-urlencoded; charset=utf-8",
+      success: function(data) {
+        if (data.status == 'fail') {
+        }
+        else {
+          location.href = '..' + data.content
+        }
+      }
+    });
+  }
+</script>

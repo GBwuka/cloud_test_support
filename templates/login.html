@@ -1,0 +1,35 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>登录</title>
+    <meta charset="utf-8"> 
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/jquery-3.2.1.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default" role="navigation"></nav>
+    <form class="form-horizontal" role="form" action="/login/" method="POST">
+      <div class="form-group">
+        <label for="username" class="col-sm-2 control-label">用户名</label>
+        <div class="col-sm-2">
+          <input type="text" name="username" class="form-control" id="username" placeholder="请输入用户名"/>
+          <p style="color:red;">{{ username_error }}</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="password" class="col-sm-2 control-label">总量</label>
+        <div class="col-sm-2">
+          <input type="password" name="password" class="form-control" id="password" placeholder="请输入密码"/>
+          <p style="color:red;">{{ password_error }}</p>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-2">
+          <button type="submit" name="submitbtn" id="submitbtn" class="btn btn-default">登录</button>
+        </div>
+      </div>
+    </form>
+  </body>
+</html>

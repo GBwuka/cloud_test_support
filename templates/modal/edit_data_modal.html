@@ -1,0 +1,139 @@
+<div class="modal fade" id="editDateModal" tabindex="-1" role="dialog" aria-labelledby="editDateModalLabel" aria-hidden="true"
+    data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <h4 class="modal-title" id="editDateModalLabel">修改数据</h4>
+        </div>
+          <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="edit_created_date" class="col-sm-4 control-label">日期</label>
+                <div class="col-sm-4">
+                  <input type="date" name="edit_created_date" class="form-control" id="edit_created_date"/>
+                  <p id="edit_date_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit_is_on_duty" class="col-sm-4 control-label">出勤</label>
+                <div class="col-sm-4">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="edit_is_on_duty" id="edit_is_on_duty" onclick="edit_set_disabled()">
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit_total_data" class="col-sm-4 control-label">总量</label>
+                <div class="col-sm-4">
+                  <input type="text" name="edit_total_data" class="form-control" id="edit_total_data" placeholder="请输入总量"/>
+                  <p id="edit_data_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit_spend_time" class="col-sm-4 control-label">耗时(h)</label>
+                <div class="col-sm-4">
+                  <input type="text" name="edit_spend_time" class="form-control" id="edit_spend_time" placeholder="请输入耗时"/>
+                  <p id="edit_time_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="edit_remark" class="col-sm-4 control-label">备注</label>
+                <div class="col-sm-7">
+                  <input type="text" name="edit_remark" class="form-control" id="edit_remark" placeholder="请输入备注"/>
+                  <p id="edit_remark_error" style="color:red;"></p>
+                </div>
+              </div>
+            </form>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="edit_data_confirm()">确认</button>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+  function edit_set_disabled() {
+    var edit_is_on_duty = $('input:checkbox[name="edit_is_on_duty"]:checked').val();
+    if (edit_is_on_duty) {
+      document.getElementById('edit_total_data').disabled = false
+      document.getElementById('edit_spend_time').disabled = false
+    }
+    else {
+      document.getElementById('edit_total_data').disabled = true
+      document.getElementById('edit_spend_time').disabled = true
+    }
+  }
+  var data_id = ""
+  $('#editDateModal').on('show.bs.modal', function (event) {
+    $('#edit_is_on_duty').prop('checked',true)
+    document.getElementById('edit_total_data').disabled = false
+    document.getElementById('edit_spend_time').disabled = false
+    $('#edit_created_date').val('')
+    $('#edit_total_data').val('')
+    $('#edit_spend_time').val('')
+    $('#edit_remark').val('')
+    document.getElementById('edit_date_error').innerHTML = ""
+    document.getElementById('edit_data_error').innerHTML = ""
+    document.getElementById('edit_time_error').innerHTML = ""
+    document.getElementById('edit_remark_error').innerHTML = ""
+    //获取表格中的一行数据
+    var button = $(event.relatedTarget) //获取当前触发事件的按钮
+    data_id = button[0].id
+    var row = button.parent().parent()[0].rowIndex
+    var edit_created_date = data_table.rows[row].cells[0].innerText
+    var edit_total_data = data_table.rows[row].cells[1].innerText
+    var edit_spend_time = data_table.rows[row].cells[2].innerText
+    var edit_is_on_duty = data_table.rows[row].cells[4].innerText
+    var edit_remark = data_table.rows[row].cells[5].innerText
+    // 向模态框中传值
+    $('#edit_created_date').val(edit_created_date)
+    $(this).find("[name='edit_created_date']").val(edit_created_date)
+    $('#edit_total_data').val(edit_total_data)
+    $(this).find("[name='edit_total_data']").val(edit_total_data)
+    $('#edit_spend_time').val(edit_spend_time)
+    $(this).find("[name='edit_spend_time']").val(edit_spend_time)
+    $('#edit_remark').val(edit_remark)
+    $(this).find("[name='edit_remark']").val(edit_remark)
+    if (edit_is_on_duty == "是") {
+      document.getElementById('edit_total_data').disabled = false
+      document.getElementById('edit_spend_time').disabled = false
+      $('#edit_is_on_duty').prop('checked',true)
+    }
+    else {
+      $('#edit_is_on_duty').prop('checked',false)
+      document.getElementById('edit_total_data').disabled = true
+      document.getElementById('edit_spend_time').disabled = true
+    }
+  })
+  function edit_data_confirm() {
+    //获取模态框数据
+    var edit_is_on_duty = $('input:checkbox[name="edit_is_on_duty"]:checked').val()
+    var edit_created_date = $('#edit_created_date').val()
+    var edit_total_data = $('#edit_total_data').val()
+    var edit_spend_time = $('#edit_spend_time').val()
+    var edit_remark = $('#edit_remark').val()
+    $.ajax({
+      type: "post",
+      // url: "update.do",
+      data: "modal_name=editDateModal&is_on_duty="+ edit_is_on_duty + "&data_id="+ data_id + "&created_date=" + edit_created_date + "&total_data=" + edit_total_data + "&spend_time=" + edit_spend_time + "&remark=" + edit_remark,
+      dataType: 'json',
+      // contentType: "application/x-www-form-urlencoded; charset=utf-8",
+      success: function(data) {
+        if (data.status == 'fail') {
+          document.getElementById('edit_date_error').innerHTML = ""
+          document.getElementById('edit_data_error').innerHTML = ""
+          document.getElementById('edit_time_error').innerHTML = ""
+          document.getElementById('edit_remark_error').innerHTML = ""
+          document.getElementById(data.id).innerHTML = data.content
+        }
+        else {
+          location.href = '..' + data.content
+        }
+      }
+    });
+  }
+</script>

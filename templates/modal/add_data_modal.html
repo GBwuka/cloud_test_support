@@ -1,0 +1,111 @@
+<div class="modal fade" id="addDateModal" tabindex="-1" role="dialog" aria-labelledby="addDateModalLabel" aria-hidden="true"
+    data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          <h4 class="modal-title" id="addDateModalLabel">添加数据</h4>
+        </div>
+          <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="add_created_date" class="col-sm-4 control-label">日期</label>
+                <div class="col-sm-4">
+                  <input type="date" name="add_created_date" class="form-control" id="add_created_date"/>
+                  <p id="add_date_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="add_is_on_duty" class="col-sm-4 control-label">出勤</label>
+                <div class="col-sm-4">
+                  <div class="checkbox">
+                    <label>
+                      <input type="checkbox" name="add_is_on_duty" id="add_is_on_duty" onclick="add_set_disabled()">
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="add_total_data" class="col-sm-4 control-label">总量</label>
+                <div class="col-sm-4">
+                  <input type="text" name="add_total_data" class="form-control" id="add_total_data" placeholder="请输入总量"/>
+                  <p id="add_data_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="add_spend_time" class="col-sm-4 control-label">耗时(h)</label>
+                <div class="col-sm-4">
+                  <input type="text" name="add_spend_time" class="form-control" id="add_spend_time" placeholder="请输入耗时"/>
+                  <p id="add_time_error" style="color:red;"></p>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="add_remark" class="col-sm-4 control-label">备注</label>
+                <div class="col-sm-7">
+                  <input type="text" name="add_remark" class="form-control" id="add_remark" placeholder="请输入备注"/>
+                  <p id="add_remark_error" style="color:red;"></p>
+                </div>
+              </div>
+            </form>
+          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <button type="button" class="btn btn-primary" onclick="add_data_confirm()">确认</button>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+  function add_set_disabled() {
+    var add_is_on_duty = $('input:checkbox[name="add_is_on_duty"]:checked').val();
+    if (add_is_on_duty) {
+      document.getElementById('add_total_data').disabled = false
+      document.getElementById('add_spend_time').disabled = false
+    }
+    else {
+      document.getElementById('add_total_data').disabled = true
+      document.getElementById('add_spend_time').disabled = true
+    }
+  }
+
+  $('#addDateModal').on('show.bs.modal', function (event) {
+    $('#add_is_on_duty').prop('checked',true)
+    document.getElementById('add_total_data').disabled = false
+    document.getElementById('add_spend_time').disabled = false
+    $('#add_created_date').val('')
+    $('#add_total_data').val('')
+    $('#add_spend_time').val('')
+    $('#add_remark').val('')
+    document.getElementById('add_date_error').innerHTML = ""
+    document.getElementById('add_data_error').innerHTML = ""
+    document.getElementById('add_time_error').innerHTML = ""
+    document.getElementById('add_remark_error').innerHTML = ""
+  })
+  function add_data_confirm() {
+    //获取模态框数据
+    var add_is_on_duty = $('input:checkbox[name="add_is_on_duty"]:checked').val();
+    var add_created_date = $('#add_created_date').val();
+    var add_total_data = $('#add_total_data').val();
+    var add_spend_time = $('#add_spend_time').val();
+    var add_remark = $('#add_remark').val();
+    $.ajax({
+      type: "post",
+      // url: "update.do",
+      data: "modal_name=addDateModal&is_on_duty="+ add_is_on_duty + "&created_date=" + add_created_date + "&total_data=" + add_total_data + "&spend_time=" + add_spend_time + "&remark=" + add_remark,
+      dataType: 'json',
+      // contentType: "application/x-www-form-urlencoded; charset=utf-8",
+      success: function(data) {
+        if (data.status == 'fail') {
+          document.getElementById('add_date_error').innerHTML = ""
+          document.getElementById('add_data_error').innerHTML = ""
+          document.getElementById('add_time_error').innerHTML = ""
+          document.getElementById('add_remark_error').innerHTML = ""
+          document.getElementById(data.id).innerHTML = data.content
+        }
+        else {
+          location.href = '..' + data.content
+        }
+      }
+    });
+  }
+</script>
